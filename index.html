@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Powerscrandle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Powerscrandle</h1>
+        <div class="scran-images">
+
+            <div class="scran-card" id="card1">
+                <p class="character-name">Character Name 1</p>
+                <img src="#" alt="Character 1" class="character-image" style="width: 150px; height: auto;">
+                <button onclick="makeGuess(1)">The Strongest Fighter!</button>
+            </div>
+
+            <div class="scran-card" id="card2">
+                <p class="character-name">Character Name 2</p>
+                <img src="#" alt="Character 2" class="character-image" style="width: 150px; height: auto;">
+                <button onclick="makeGuess(2)">The Strongest Fighter!</button>
+            </div>
+
+        </div>
+        <div id="feedback"></div>
+    </div>
+
+    <div id="image-container">
+        <!-- The image will be inserted here by JavaScript -->
+    </div>
+
+    <script src="script.js"></script>
+</body>
