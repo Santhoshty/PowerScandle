@@ -1,7 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-
+import sqlite3
+import os
 
 #Constants
 #url = "https://vsbattles.fandom.com/wiki/Captain_America_(Marvel_Comics)"
@@ -11,6 +12,10 @@ import re
 #url = "https://vsbattles.fandom.com/wiki/Happy_(Fairy_Tail)"                       #edge case Key? unsure
 url = "https://vsbattles.fandom.com/wiki/Special:Random"
 #url = "https://vsbattles.fandom.com/wiki/Cleopatra_(Fate)"
+#url = "https://vsbattles.fandom.com/wiki/The_Darkhold_(Marvel_Cinematic_Universe)" #edge case tier unknown
+
+DB_FILE = 'vsbattles_data.db'
+TABLE_NAME = 'characters'
 
 #Methods
 
@@ -76,7 +81,6 @@ def ratingValue(string):
     return value_map.get(string, 0)
 
 
-print(url)
 # Http Request
 try:
     response = requests.get(url)
@@ -87,9 +91,11 @@ except requests.exceptions.RequestException as e:
     print(f"Error fetching URL: {e}")
     exit()
 
-
 soup = BeautifulSoup(response.content, 'html.parser')
 
+# Get URL
+final_url = response.url
+print(f"URL : {final_url}")
 
 # Character Name
 page_title = soup.title.string
@@ -132,6 +138,73 @@ for img in image_elements:
 #    print(url)
 
 image_link = image_urls[2].replace('static','vignette')
+
 print(f"Source Image: {image_link}")
 
-print(f"Power Level: {ratingValue(tier_value)}")
+power_level = ratingValue(tier_value)
+
+print(f"Power Level: {power_level}")
+
+
+# Connect to the database
+
+conn = None
+
+try:
+
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    # 3. Create the table if it doesn't exist
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            tier_string TEXT,
+            power_level INTEGER,
+            url TEXT,
+            image_url TEXT
+        )
+    """)
+    conn.commit()
+
+    # 4. Prepare data for insertion (using a tuple)
+    data_to_insert = (
+        character_name,
+        tier_value,
+        power_level,
+        final_url,
+        image_link
+    )
+
+    # 5. Insert data. Use ON CONFLICT IGNORE to skip if the character name already exists
+    # This prevents errors if you run the random scraper multiple times and hit the same page.
+    insert_query = f"""
+        INSERT INTO {TABLE_NAME} (name, tier_string, power_level, url, image_url)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(name) DO NOTHING;
+    """
+    cursor.execute(insert_query, data_to_insert)
+    conn.commit()
+    print(f"\n✅ Data for **{character_name}** successfully inserted/updated in '{DB_FILE}'.")
+
+except sqlite3.Error as e:
+    print(f"\n❌ Database error occurred: {e}")
+
+finally:
+    # 6. Close the connection
+    if conn:
+        conn.close()
+
+# Example of how to read data back (optional)
+try:
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT COUNT(*) FROM {TABLE_NAME}")
+    count = cursor.fetchone()[0]
+    print(f"Current total characters in database: {count}")
+except sqlite3.Error as e:
+    print(f"Error reading database count: {e}")
+finally:
+    if conn:
+        conn.close()
