@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import re
 import sqlite3
 import json
+import time
+import random
 from flask import Flask, jsonify
 from flask_cors import CORS # Required for development to allow cross-origin requests
 
@@ -17,7 +19,6 @@ CORS(app)
 #url = "https://vsbattles.fandom.com/wiki/Nightmare_Nurse_(DC_Comics)"              #edge case tier unknown
 #url = "https://vsbattles.fandom.com/wiki/Happy_(Fairy_Tail)"                       #edge case Key? unsure
 url = "https://vsbattles.fandom.com/wiki/Special:Random"
-#url = "https://vsbattles.fandom.com/wiki/Cleopatra_(Fate)"
 #url = "https://vsbattles.fandom.com/wiki/The_Darkhold_(Marvel_Cinematic_Universe)" #edge case tier unknown
 
 DB_FILE = 'vsbattles_data.db'
@@ -43,6 +44,7 @@ def requestBegin():
     return BeautifulSoup(response.content, 'html.parser')
 
 # Get The Tier Value in the Form of a String by Passing the Beautiful Soup Object
+# If String is 'none' restart
 
 def getTier(soup_object):
 
@@ -145,7 +147,9 @@ def ratingValue(string):
 
     return value_map.get(string, 0)
 
-for i in range (2):
+count = 0
+reiterations = 0
+while count < 2:
 
     soup = requestBegin()
 
@@ -154,8 +158,16 @@ for i in range (2):
     character_name = page_title.split(' |',1)[0]
     print(f"Character Name: {character_name}")
 
-
     tier_value = getTier(soup)
+
+    if tier_value is None:
+        reiterations += 1
+        if reiterations == 10:
+            exit()
+
+        print (f"Tier Invalid - {reiterations} reiteration")
+        time.sleep(0.2)
+        continue
     print(f"Tier: {tier_value}")
 
     image_link = getImageLink(soup)
@@ -163,3 +175,8 @@ for i in range (2):
 
     power_level = ratingValue(tier_value)
     print(f"Power Level: {power_level}\n")
+
+    count += 1
+    time.sleep(0.2)
+
+ 
