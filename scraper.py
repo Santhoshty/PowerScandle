@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import sqlite3
-import os
+import json
 from flask import Flask, jsonify
 from flask_cors import CORS # Required for development to allow cross-origin requests
 
@@ -24,6 +24,23 @@ DB_FILE = 'vsbattles_data.db'
 TABLE_NAME = 'characters'
 
 ###### METHODS ########
+
+# HTTP Request Method also prints the url taken from random
+
+def requestBegin():
+# Http Request
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+        html_content = response.text # Giant String for all the html content
+        recieved_url = response.url
+        print(f"URL : {recieved_url}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching URL: {e}")
+        exit()
+
+    return BeautifulSoup(response.content, 'html.parser')
 
 # Get The Tier Value in the Form of a String by Passing the Beautiful Soup Object
 
@@ -48,6 +65,21 @@ def getTier(soup_object):
 
         print("Error: Could not find the <a> tag with string 'Tier'.")
 
+# Get the Source Image in the Form of a String by Passing the Beautiful Soup Object
+
+def getImageLink(soup_object):
+
+    image_elements = soup_object.find_all('img')
+
+    image_urls = []
+
+    for img in image_elements:
+        if 'src' in img.attrs:  # Check if the 'src' attribute exists
+            image_urls.append(img['src'])
+
+    image_link = image_urls[2].replace('static','vignette')
+
+    return image_link
 
 # Get the rating Value From the Tier String
 
@@ -113,53 +145,21 @@ def ratingValue(string):
 
     return value_map.get(string, 0)
 
+for i in range (2):
 
-# Http Request
-try:
-    response = requests.get(url)
-    response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
-    html_content = response.text # Giant String for all the html content
+    soup = requestBegin()
 
-except requests.exceptions.RequestException as e:
-    print(f"Error fetching URL: {e}")
-    exit()
-
-soup = BeautifulSoup(response.content, 'html.parser')
-
-# Get URL
-final_url = response.url
-print(f"URL : {final_url}")
-
-# Character Name
-page_title = soup.title.string
-character_name = page_title.split(' |',1)[0]
-print(f"Character Name: {character_name}")
+    # Character Name
+    page_title = soup.title.string
+    character_name = page_title.split(' |',1)[0]
+    print(f"Character Name: {character_name}")
 
 
-# Get the tier string from site
-tier_value = getTier(soup)
-print(f"Tier: {tier_value}")
+    tier_value = getTier(soup)
+    print(f"Tier: {tier_value}")
 
-# Source Image
+    image_link = getImageLink(soup)
+    print(f"Source Image: {image_link}")
 
-def getImageLink(soup_object):
-
-    image_elements = soup_object.find_all('img')
-
-    image_urls = []
-
-    for img in image_elements:
-        if 'src' in img.attrs:  # Check if the 'src' attribute exists
-            image_urls.append(img['src'])
-
-    image_link = image_urls[2].replace('static','vignette')
-
-    return image_link
-
-image_link = getImageLink(soup)
-
-print(f"Source Image: {image_link}")
-
-power_level = ratingValue(tier_value)
-
-print(f"Power Level: {power_level}")
+    power_level = ratingValue(tier_value)
+    print(f"Power Level: {power_level}\n")
