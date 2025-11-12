@@ -6,3 +6,13 @@
 - Put it in some form of DB
 - Access the DB from the Front End
     - Replace the images with the correct form
+
+
+- Refactor the scraper.py code into functions
+- If Tier fails Reload the functions
+
+
+# Big Step
+
+- Get the Name, Origin, Gender, Age, Classification
+- Create an Empty Text File That Auto Completes

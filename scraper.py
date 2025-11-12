@@ -23,7 +23,33 @@ url = "https://vsbattles.fandom.com/wiki/Special:Random"
 DB_FILE = 'vsbattles_data.db'
 TABLE_NAME = 'characters'
 
-#Methods
+###### METHODS ########
+
+# Get The Tier Value in the Form of a String by Passing the Beautiful Soup Object
+
+def getTier(soup_object):
+
+    tier_link = soup_object.find('a', string='Tier')
+
+    if tier_link:
+
+        tier_label_bold_tag = tier_link.parent
+        
+        tier_value_bold_tag = tier_label_bold_tag.find_next_sibling('b')
+        
+        if tier_value_bold_tag:
+            tier_value = tier_value_bold_tag.get_text(strip=True)
+            return tier_value
+
+        else:
+
+            print("Error: Could not find the next <b> tag containing the tier value.")
+    else:
+
+        print("Error: Could not find the <a> tag with string 'Tier'.")
+
+
+# Get the rating Value From the Tier String
 
 def ratingValue(string):
     
@@ -81,7 +107,8 @@ def ratingValue(string):
         '1-A'       : 51,
         'High 1-A'  : 52,
         '0'         : 53,
-        'Unknown'   : 54             
+        'Unknown'   : 54, #Darkhold
+        'Varies'    : 12 # Thaal Sinestro            
     }
 
     return value_map.get(string, 0)
@@ -109,108 +136,30 @@ character_name = page_title.split(' |',1)[0]
 print(f"Character Name: {character_name}")
 
 
-# Tier Ranking
-tier_link = soup.find('a', string='Tier')
-
-if tier_link:
-
-    tier_label_bold_tag = tier_link.parent
-    
-    tier_value_bold_tag = tier_label_bold_tag.find_next_sibling('b')
-    
-    if tier_value_bold_tag:
-        tier_value = tier_value_bold_tag.get_text(strip=True)
-        print(f"Tier value: {tier_value}")
-
-    else:
-
-        print("Error: Could not find the next <b> tag containing the tier value.")
-else:
-
-    print("Error: Could not find the <a> tag with string 'Tier'.")
-
+# Get the tier string from site
+tier_value = getTier(soup)
+print(f"Tier: {tier_value}")
 
 # Source Image
 
-image_elements = soup.find_all('img')
+def getImageLink(soup_object):
 
-image_urls = []
+    image_elements = soup_object.find_all('img')
 
-for img in image_elements:
-    if 'src' in img.attrs:  # Check if the 'src' attribute exists
-        image_urls.append(img['src'])
+    image_urls = []
 
-#for url in image_urls:
-#    print(url)
+    for img in image_elements:
+        if 'src' in img.attrs:  # Check if the 'src' attribute exists
+            image_urls.append(img['src'])
 
-image_link = image_urls[2].replace('static','vignette')
+    image_link = image_urls[2].replace('static','vignette')
+
+    return image_link
+
+image_link = getImageLink(soup)
 
 print(f"Source Image: {image_link}")
 
 power_level = ratingValue(tier_value)
 
 print(f"Power Level: {power_level}")
-
-
-######## Connect to the database #########
-
-conn = None
-
-try:
-
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-
-    # 3. Create the table if it doesn't exist
-    cursor.execute(f"""
-        CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE NOT NULL,
-            tier_string TEXT,
-            power_level INTEGER,
-            url TEXT,
-            image_url TEXT
-        )
-    """)
-    conn.commit()
-
-    # 4. Prepare data for insertion (using a tuple)
-    data_to_insert = (
-        character_name,
-        tier_value,
-        power_level,
-        final_url,
-        image_link
-    )
-
-    # 5. Insert data. Use ON CONFLICT IGNORE to skip if the character name already exists
-    # This prevents errors if you run the random scraper multiple times and hit the same page.
-    insert_query = f"""
-        INSERT INTO {TABLE_NAME} (name, tier_string, power_level, url, image_url)
-        VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(name) DO NOTHING;
-    """
-    cursor.execute(insert_query, data_to_insert)
-    conn.commit()
-    print(f"\n✅ Data for **{character_name}** successfully inserted/updated in '{DB_FILE}'.")
-
-except sqlite3.Error as e:
-    print(f"\n❌ Database error occurred: {e}")
-
-finally:
-    # 6. Close the connection
-    if conn:
-        conn.close()
-
-# Example of how to read data back (optional)
-try:
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT COUNT(*) FROM {TABLE_NAME}")
-    count = cursor.fetchone()[0]
-    print(f"Current total characters in database: {count}")
-except sqlite3.Error as e:
-    print(f"Error reading database count: {e}")
-finally:
-    if conn:
-        conn.close()

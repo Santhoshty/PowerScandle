@@ -11,9 +11,11 @@ CORS(app)
 python_scran_data = [
     { 
         "id": 1,
-        "name": 'Darth Vader',
-        "image_url": 'https://vignette.wikia.nocookie.net/vsbattles/images/2/29/Sandwormsschoenherr.jpg',
-        "power_level": 75
+        "name": 'Mitsuru Kirijo',
+        "tier_string": 'Low 2-C',
+        "power_level": '41',
+        "url": 'https://vsbattles.fandom.com/wiki/Mitsuru_Kirijo',
+        "image_url": 'https://vignette.wikia.nocookie.net/vsbattles/images/d/d4/Mitsuru_Kirijo_render.png/revision/latest?cb=20170506143614',
     },
     {
         "id": 2,
@@ -21,18 +23,7 @@ python_scran_data = [
         "image_url": 'https://vignette.wikia.nocookie.net/vsbattles/images/b/be/Honey_Lemon_Render.png/revision/latest/scale-to-width-down/400?cb=20190404133937',
         "power_level": 90
     },
-    {
-        "id": 3,
-        "name": 'Captain America',
-        "image_url": 'https://vsbattles.fandom.com/wiki/VS_Battles_Wiki?file=Spider_man_by_alexelz_da6rbcd.png',
-        "power_level": 15
-    },
-    {
-        "id": 4,
-        "name": 'Cleopatra',
-        "image_url": 'https://vignette.wikia.nocookie.net/vsbattles/images/c/c5/Cleopatra_1st_Ascension.png/revision/latest/scale-to-width-down/1000?cb=20180708003853',
-        "power_level": 40
-    },
+
 ]
 
 @app.route('/api/characters', methods=['GET'])
