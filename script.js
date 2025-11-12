@@ -1,61 +1,52 @@
-//replace the word 'static' with 'vignette'
-
-const imgURL1 = 'https://vignette.wikia.nocookie.net/vsbattles/images/2/29/Sandwormsschoenherr.jpg';
-const imgURL2 = 'https://vignette.wikia.nocookie.net/vsbattles/images/b/be/Honey_Lemon_Render.png/revision/latest/scale-to-width-down/400?cb=20190404133937';
-
-const API_URL = 'http://127.0.0.1:5000/api/characters'; // Server URL
-let scranData = []; // Data will be stored here after fetching
+// The dedicated API endpoint for a random pair
+const API_URL_RANDOM = 'http://127.0.0.1:5000/api/characters/random'; 
 let currentItems = [];
 
 /**
- * Fetches character data from the Python API and stores it in scranData.
+ * Fetches a single pair of random characters from the API.
+ * This function is called every time a new round is needed.
  */
-async function fetchData() {
+async function loadNewRound() {
     try {
-        // Fetch data from the running Python server
-        const response = await fetch(API_URL); 
+        // Clear previous feedback immediately to show the game is loading
+        document.getElementById('feedback').textContent = 'Loading next round...';
+        
+        // 1. Fetch data for TWO characters from the server's random endpoint
+        const response = await fetch(API_URL_RANDOM); 
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        // Parse the JSON response
-        scranData = await response.json(); 
-        console.log('Data loaded from Python:', scranData);
-        return true; // Indicate success
+        
+        // 2. The response is a JSON array of two objects
+        const data = await response.json(); 
+        
+        if (!Array.isArray(data) || data.length < 2) {
+            throw new Error("API returned insufficient data.");
+        }
+
+        currentItems = data;
+        console.log('New round loaded:', currentItems.map(item => item.name));
+
+        // 3. Update Card 1
+        const card1 = document.getElementById('card1');
+        // Use 'image_url' and 'power_level' as named in the Python API
+        card1.querySelector('.character-image').src = currentItems[0].image_url;
+        card1.querySelector('.character-name').textContent = currentItems[0].name;
+        
+        // 4. Update Card 2
+        const card2 = document.getElementById('card2');
+        card2.querySelector('.character-image').src = currentItems[1].image_url;
+        card2.querySelector('.character-name').textContent = currentItems[1].name;
+
+        // 5. Clear feedback for the guess
+        document.getElementById('feedback').textContent = '';
+
     } catch (error) {
-        console.error('Could not fetch data:', error);
-        // Display an error message to the user if fetch fails
-        document.getElementById('feedback').textContent = 'Error loading game data. Check the Python server.';
-        return false; // Indicate failure
+        console.error('Failed to load new round:', error);
+        document.getElementById('feedback').textContent = 
+            '🛑 Error loading game data. Please ensure the Python server is running.';
     }
-}
-
-function loadNewRound() {
-    // Ensure there's data to pick from
-    if (scranData.length < 2) {
-        console.error("Not enough data to load a new round.");
-        return;
-    }
-
-    // Pick two random characters
-    let index1 = Math.floor(Math.random() * scranData.length);
-    let index2 = Math.floor(Math.random() * scranData.length);
-    while (index1 === index2) {
-        index2 = Math.floor(Math.random() * scranData.length);
-    }
-    currentItems = [scranData[index1], scranData[index2]];
-
-    // ... (rest of the card update logic) ...
-    // Update Card 1
-    const card1 = document.getElementById('card1');
-    card1.querySelector('.character-image').src = currentItems[0].image;
-    card1.querySelector('.character-name').textContent = currentItems[0].name;
-    // Update Card 2
-    const card2 = document.getElementById('card2');
-    card2.querySelector('.character-image').src = currentItems[1].image;
-    card2.querySelector('.character-name').textContent = currentItems[1].name;
-
-    // Clear previous feedback
-    document.getElementById('feedback').textContent = '';
 }
 
 function makeGuess(choice) {
@@ -63,8 +54,8 @@ function makeGuess(choice) {
     const otherItem = currentItems[choice === 1 ? 1 : 0];
     const feedbackElement = document.getElementById('feedback');
 
-    // Compare ratings and give feedback
-    if (chosenItem.rating > otherItem.rating) {
+    // Compare the 'power_level' attribute from the API
+    if (chosenItem.power_level > otherItem.power_level) {
         feedbackElement.textContent = 'Correctomondo!.';
         // Add logic to update streak
     } else {
@@ -72,22 +63,15 @@ function makeGuess(choice) {
         // Add logic to reset streak
     }
     
-    // Display ratings after the guess
-    feedbackElement.textContent += ` (${currentItems[0].rating}% vs ${currentItems[1].rating}%)`;
+    // Display power levels after the guess
+    feedbackElement.textContent += ` (${currentItems[0].power_level} vs ${currentItems[1].power_level})`;
 
     // Load a new round after a delay
     setTimeout(loadNewRound, 3000);
 }
 
-Start the game when the page loads
+// Start the game when the page loads
 window.onload = async () => {
-    // 1. Fetch the data from the Python backend
-    const dataLoaded = await fetchData();
-
-    // 2. If successful, start the game
-    if (dataLoaded && scranData.length >= 2) {
-        loadNewRound();
-    } else if (scranData.length < 2) {
-         document.getElementById('feedback').textContent = 'Error: Not enough data loaded to start the game.';
-    }
+    // Start the game directly by loading the first round from the API
+    loadNewRound();
 };

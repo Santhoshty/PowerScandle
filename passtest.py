@@ -24,13 +24,13 @@ python_scran_data = [
     {
         "id": 3,
         "name": 'Captain America',
-        "image_url": 'https://vignette.wikia.nocookie.net/vsbattles/images/1/10/Captain_America_AOU_2.png',
+        "image_url": 'https://vsbattles.fandom.com/wiki/VS_Battles_Wiki?file=Spider_man_by_alexelz_da6rbcd.png',
         "power_level": 15
     },
     {
         "id": 4,
         "name": 'Cleopatra',
-        "image_url": 'https://vignette.wikia.nocookie.net/vsbattles/images/b/b3/Cleopatra.png',
+        "image_url": 'https://vignette.wikia.nocookie.net/vsbattles/images/c/c5/Cleopatra_1st_Ascension.png/revision/latest/scale-to-width-down/1000?cb=20180708003853',
         "power_level": 40
     },
 ]
