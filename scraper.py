@@ -3,6 +3,12 @@ from bs4 import BeautifulSoup
 import re
 import sqlite3
 import os
+from flask import Flask, jsonify
+from flask_cors import CORS # Required for development to allow cross-origin requests
+
+app = Flask(__name__)
+# Enable CORS for development
+CORS(app)
 
 #Constants
 #url = "https://vsbattles.fandom.com/wiki/Captain_America_(Marvel_Comics)"
@@ -146,7 +152,7 @@ power_level = ratingValue(tier_value)
 print(f"Power Level: {power_level}")
 
 
-# Connect to the database
+######## Connect to the database #########
 
 conn = None
 
