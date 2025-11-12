@@ -149,14 +149,20 @@ def ratingValue(string):
 
 count = 0
 reiterations = 0
+
+#Dictionary
+data = []
 while count < 2:
 
+    keys = ["Character", "Tier", "Source Image", "Power Level"]
+    value = []
     soup = requestBegin()
 
     # Character Name
     page_title = soup.title.string
     character_name = page_title.split(' |',1)[0]
     print(f"Character Name: {character_name}")
+    value.append(character_name)
 
     tier_value = getTier(soup)
 
@@ -169,14 +175,23 @@ while count < 2:
         time.sleep(0.2)
         continue
     print(f"Tier: {tier_value}")
+    value.append(tier_value)
 
     image_link = getImageLink(soup)
     print(f"Source Image: {image_link}")
+    value.append(image_link)
 
     power_level = ratingValue(tier_value)
     print(f"Power Level: {power_level}\n")
+    value.append(power_level)
+
+    # Combine keys and values into a single dictionary using zip()
+    character_data = dict(zip(keys, value))
+    data.append(character_data) # Add the dictionary to the 
 
     count += 1
     time.sleep(0.2)
 
- 
+json_data = json.dumps(data, indent=4)
+print("Collected Data:")
+print(json_data)
