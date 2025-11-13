@@ -2,6 +2,9 @@
 let allCharacters = [];
 let character1 = null;
 let character2 = null;
+let playerScore = 0;
+let roundsPlayed = 0;
+
 
 // --- 1. Fetch Data and Initialize Game ---
 async function fetchData() {
@@ -43,6 +46,10 @@ function initializeGame() {
     console.log("Character 1:", character1);
     console.log("Character 2:", character2);
 
+    // 1. Update the Score Display
+    // Ensure you have a score element in your HTML (see HTML update below)
+    document.getElementById('player-score').textContent = playerScore;
+
     // 2. Update the HTML elements (Card 1)
     // Using 'Character' key for name and 'Source Image' key for image URL
     document.querySelector('#card1 .character-name').textContent = character1.Character;
@@ -56,7 +63,7 @@ function initializeGame() {
     document.querySelector('#card2 .character-image').alt = character2.Character;
     
     // 4. Clear feedback and set prompt
-    document.getElementById('feedback').innerHTML = '<h2 class="text-xl font-bold">Who is the strongest fighter?</h2>';
+    document.getElementById('feedback').innerHTML = '<h3 class="text-xl font-bold">Who Will Win?</h2>';
     
     // 5. Hide the power levels for the start of the round and enable buttons
     document.getElementById('card1-stats').classList.add('hidden');
@@ -117,6 +124,26 @@ window.makeGuess = function(guessCardNumber) {
             isCorrect = false;
             message = `❌ Incorrect. ${guessedCharacter.Character} (Power Level: ${guessedCharacter["Power Level"]}) is weaker than the true strongest, ${strongestCharacter.Character} (Power Level: ${strongestCharacter["Power Level"]}).`;
         }
+
+    if (isCorrect) {
+        // Increment the global score variable (assuming 'playerScore' is defined globally)
+        playerScore++; 
+        // Update the score display element
+        document.getElementById('player-score').textContent = playerScore;
+    }
+
+    else {playerScore = 0} //Change Points to 0 When Lost
+    
+    // Update the feedback message with the final result
+    feedbackElement.innerHTML = `<h2 class="text-xl font-bold">${message}</h2>`;
+    
+    // Add a "Next Round" button to the feedback area
+    feedbackElement.innerHTML += `
+        <button onclick="startNextRound()" 
+                class="action-button mt-4 px-6 py-2 bg-green-600 hover:bg-green-500 rounded-lg font-semibold shadow-lg">
+            Start Next Round
+        </button>
+    `;
     }
 
     // Display the result
