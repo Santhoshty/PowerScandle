@@ -1,15 +1,5 @@
+# Create the Connection to the JS
 
-
-- Make a basic scraper for the website
-    - Get the Image Link
-        - Parse It
-- Put it in some form of DB
-- Access the DB from the Front End
-    - Replace the images with the correct form
-
-
-- Refactor the scraper.py code into functions
-- If Tier fails Reload the functions
 
 
 # Big Step

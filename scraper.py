@@ -195,3 +195,12 @@ while count < 2:
 json_data = json.dumps(data, indent=4)
 print("Collected Data:")
 print(json_data)
+
+app = Flask(__name__)
+
+@app.route("/")
+
+def index():
+    return jsonify(json_data)
+
+app.run(host = "127.0.0.1", port=8004)
