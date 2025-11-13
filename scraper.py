@@ -1,12 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-import sqlite3
 import json
 import time
-import random
 from flask import Flask, jsonify
-from flask_cors import CORS # Required for development to allow cross-origin requests
+from flask_cors import CORS, cross_origin # Required for development to allow cross-origin requests
 
 app = Flask(__name__)
 # Enable CORS for development
@@ -198,9 +196,12 @@ print(json_data)
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/api/data", methods = ['GET'])
+@cross_origin() 
+def get_data():
+    return jsonify(data)
 
-def index():
-    return jsonify(json_data)
-
-app.run(host = "127.0.0.1", port=8004)
+if __name__ == '__main__':
+    # Running the app on the host and port specified in the JavaScript snippet
+    print("Starting Flask server on http://127.0.0.1:8004/api/data...")
+    app.run(host = "127.0.0.1", port=8004)

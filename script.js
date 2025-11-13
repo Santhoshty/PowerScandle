@@ -1,77 +1,133 @@
-// The dedicated API endpoint for a random pair
-const API_URL_RANDOM = 'http://127.0.0.1:5000/api/characters/random'; 
-let currentItems = [];
+// Global variables will be initialized here
+let allCharacters = [];
+let character1 = null;
+let character2 = null;
 
-/**
- * Fetches a single pair of random characters from the API.
- * This function is called every time a new round is needed.
- */
-async function loadNewRound() {
+// --- 1. Fetch Data and Initialize Game ---
+async function fetchData() {
     try {
-        // Clear previous feedback immediately to show the game is loading
-        document.getElementById('feedback').textContent = 'Loading next round...';
-        
-        // 1. Fetch data for TWO characters from the server's random endpoint
-        const response = await fetch(API_URL_RANDOM); 
-        
+        // Fetch the data from the Flask endpoint
+        const response = await fetch('http://127.0.0.1:8004/api/data');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+        allCharacters = await response.json();
         
-        // 2. The response is a JSON array of two objects
-        const data = await response.json(); 
-        
-        if (!Array.isArray(data) || data.length < 2) {
-            throw new Error("API returned insufficient data.");
+        if (allCharacters.length < 2) {
+            document.getElementById('feedback').innerHTML = "<p style='color: red;'>Error: Not enough character data to start the game (need at least 2).</p>";
+            return;
         }
 
-        currentItems = data;
-        console.log('New round loaded:', currentItems.map(item => item.name));
-
-        // 3. Update Card 1
-        const card1 = document.getElementById('card1');
-        // Use 'image_url' and 'power_level' as named in the Python API
-        card1.querySelector('.character-image').src = currentItems[0].image_url;
-        card1.querySelector('.character-name').textContent = currentItems[0].name;
-        
-        // 4. Update Card 2
-        const card2 = document.getElementById('card2');
-        card2.querySelector('.character-image').src = currentItems[1].image_url;
-        card2.querySelector('.character-name').textContent = currentItems[1].name;
-
-        // 5. Clear feedback for the guess
-        document.getElementById('feedback').textContent = '';
+        console.log("Data fetched successfully:", allCharacters);
+        // CRITICAL DEBUG STEP: Attempt to initialize the game
+        try {
+            initializeGame();
+        } catch (e) {
+             document.getElementById('feedback').innerHTML = `<p style='color: red;'>**Rendering Error in initializeGame()**<br>Check console for details.</p>`;
+             console.error("Game Initialization Failed:", e);
+        }
 
     } catch (error) {
-        console.error('Failed to load new round:', error);
-        document.getElementById('feedback').textContent = 
-            '🛑 Error loading game data. Please ensure the Python server is running.';
+        console.error('Error fetching data:', error);
+        // Ensure the error message is correctly displayed in the catch block
+        document.getElementById('feedback').innerHTML = `<p style='color: red;'>Failed to load game data. Is the Flask server running? Error: ${error.message}</p>`;
     }
 }
 
-function makeGuess(choice) {
-    const chosenItem = currentItems[choice - 1];
-    const otherItem = currentItems[choice === 1 ? 1 : 0];
-    const feedbackElement = document.getElementById('feedback');
+// --- 2. Game Initialization Logic ---
+function initializeGame() {
 
-    // Compare the 'power_level' attribute from the API
-    if (chosenItem.power_level > otherItem.power_level) {
-        feedbackElement.textContent = 'Correctomondo!.';
-        // Add logic to update streak
-    } else {
-        feedbackElement.textContent = 'Wrong! The other one had a higher rating.';
-        // Add logic to reset streak
-    }
+    character1 = allCharacters[0];
+    character2 = allCharacters[1];
+
+    console.log("Character 1:", character1);
+    console.log("Character 2:", character2);
+
+    // 2. Update the HTML elements (Card 1)
+    // Using 'Character' key for name and 'Source Image' key for image URL
+    document.querySelector('#card1 .character-name').textContent = character1.Character;
+    document.querySelector('#card1 .character-image').src = character1["Source Image"] || 'https://placehold.co/100x100/cccccc/000000?text=NO+IMG';
+    document.querySelector('#card1 .character-image').alt = character1.Character;
     
-    // Display power levels after the guess
-    feedbackElement.textContent += ` (${currentItems[0].power_level} vs ${currentItems[1].power_level})`;
-
-    // Load a new round after a delay
-    setTimeout(loadNewRound, 3000);
+    // 3. Update the HTML elements (Card 2)
+    // Using 'Character' key for name and 'Source Image' key for image URL
+    document.querySelector('#card2 .character-name').textContent = character2.Character;
+    document.querySelector('#card2 .character-image').src = character2["Source Image"] || 'https://placehold.co/100x100/cccccc/000000?text=NO+IMG';
+    document.querySelector('#card2 .character-image').alt = character2.Character;
+    
+    // 4. Clear feedback and set prompt
+    document.getElementById('feedback').innerHTML = '<h2 class="text-xl font-bold">Who is the strongest fighter?</h2>';
+    
+    // 5. Hide the power levels for the start of the round and enable buttons
+    document.getElementById('card1-stats').classList.add('hidden');
+    document.getElementById('card2-stats').classList.add('hidden');
+    document.getElementById('card1-button').disabled = false;
+    document.getElementById('card2-button').disabled = false;
 }
 
-// Start the game when the page loads
-window.onload = async () => {
-    // Start the game directly by loading the first round from the API
-    loadNewRound();
+
+// --- 3. Guessing Logic (called by the button's onclick) ---
+window.makeGuess = function(guessCardNumber) {
+    // Disable buttons immediately to prevent multiple clicks
+    document.getElementById('card1-button').disabled = true;
+    document.getElementById('card2-button').disabled = true;
+
+    if (!character1 || !character2) {
+        document.getElementById('feedback').innerHTML = "<p style='color: orange;'>Game not initialized. Please refresh.</p>";
+        return;
+    }
+
+    // CRITICAL FIX: Explicitly convert Power Level strings to numbers for comparison
+    const power1 = parseFloat(character1["Power Level"]);
+    const power2 = parseFloat(character2["Power Level"]);
+    
+    const feedbackElement = document.getElementById('feedback');
+    let message = "";
+    let isCorrect = false;
+
+    // Show power levels after the guess
+    document.getElementById('card1-stats').classList.remove('hidden');
+    document.getElementById('card2-stats').classList.remove('hidden');
+    
+    // Display the original, non-parsed Power Level string
+    document.getElementById('card1-power').textContent = character1["Tier"];
+    document.getElementById('card2-power').textContent = character2["Tier"];
+
+
+    // Determine the truly strongest character using the numerically parsed values
+    const strongestCharacter = (power1 > power2) ? character1 : character2;
+    const weakestCharacter = (power1 < power2) ? character1 : character2;
+
+    // Get names
+    const name1 = character1.Character;
+    const name2 = character2.Character;
+
+    // Check for a tie
+    if (power1 === power2) {
+        message = `It's a tie! Both ${name1} and ${name2} have a Power Level of ${character1["Power Level"]}.`;
+        isCorrect = false; 
+    } else {
+        // Determine the user's chosen character based on the button clicked
+        const guessedCharacter = (guessCardNumber === 1) ? character1 : character2;
+        
+        if (guessedCharacter === strongestCharacter) {
+            isCorrect = true;
+            message = `🎉 Correct! ${guessedCharacter.Character} (Power Level: ${guessedCharacter["Power Level"]}) is stronger than ${weakestCharacter.Character} (Power Level: ${weakestCharacter["Power Level"]}).`;
+        } else {
+            isCorrect = false;
+            message = `❌ Incorrect. ${guessedCharacter.Character} (Power Level: ${guessedCharacter["Power Level"]}) is weaker than the true strongest, ${strongestCharacter.Character} (Power Level: ${strongestCharacter["Power Level"]}).`;
+        }
+    }
+
+    // Display the result
+    feedbackElement.innerHTML = `<h2 class='text-xl font-bold p-2 text-${isCorrect ? 'green' : 'red'}-400'>${message}</h2>`;
+
+    // After a short delay, start a new round
+    setTimeout(() => {
+        initializeGame();
+    }, 3000); // 3-second delay before the next round starts
 };
+
+
+// --- 4. Start the game by fetching data when the page loads ---
+document.addEventListener('DOMContentLoaded', fetchData);
