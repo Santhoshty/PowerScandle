@@ -1,6 +1,9 @@
-# Create the Connection to the JS
-
-
+# Have Python Get 10 Resources
+# Have JS go through Sequentially
+# Account For "Varies and Unknown"
+# Avoid Equal Power Levels
+# Have Red and Green Button If they Get it Right or Wrong
+# Pop up at the end with how good they did blur the background
 
 # Big Step
 

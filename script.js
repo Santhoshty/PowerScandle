@@ -3,8 +3,10 @@ let allCharacters = [];
 let character1 = null;
 let character2 = null;
 let playerScore = 0;
-let roundsPlayed = 0;
-
+// roundsPlayed is redundant, let's stick to currentRound
+let currentRound = 1;
+let characterIndex = 0; // Starts at 0, uses allCharacters[0] and allCharacters[1] for the first round
+const MAX_ROUNDS = 10;
 
 // --- 1. Fetch Data and Initialize Game ---
 async function fetchData() {
@@ -16,17 +18,22 @@ async function fetchData() {
         }
         allCharacters = await response.json();
         
+        // **Critical: Ensure data is sufficient before proceeding**
         if (allCharacters.length < 2) {
             document.getElementById('feedback').innerHTML = "<p style='color: red;'>Error: Not enough character data to start the game (need at least 2).</p>";
             return;
         }
 
+        // Shuffle the characters array to make the game more random
+        allCharacters.sort(() => Math.random() - 0.5); 
+
         console.log("Data fetched successfully:", allCharacters);
-        // CRITICAL DEBUG STEP: Attempt to initialize the game
+        
+        // CRITICAL FIX: Start the first round after data is fetched
         try {
-            initializeGame();
+            startRound(); // Call the renamed function to start the first round
         } catch (e) {
-             document.getElementById('feedback').innerHTML = `<p style='color: red;'>**Rendering Error in initializeGame()**<br>Check console for details.</p>`;
+             document.getElementById('feedback').innerHTML = `<p style='color: red;'>**Rendering Error in startRound()**<br>Check console for details.</p>`;
              console.error("Game Initialization Failed:", e);
         }
 
@@ -37,35 +44,59 @@ async function fetchData() {
     }
 }
 
-// --- 2. Game Initialization Logic ---
-function initializeGame() {
+// --- 2. Game Round Logic (Renamed and Improved) ---
+function startRound() {
 
-    character1 = allCharacters[0];
-    character2 = allCharacters[1];
+// 1. Check if the game is over
+    if (currentRound > MAX_ROUNDS) {
+        // Handle Game Over logic here (e.g., display final score, reset button)
+        document.getElementById('feedback').innerHTML = '<h2 class="text-2xl font-bold text-green-500">Game Over!</h2><p class="text-xl">Your final score is: ' + playerScore + '/' + MAX_ROUNDS + '</p>';
+        console.log("Game Over! Final Score:", playerScore);
+        
+        // Optionally disable buttons or show a restart option
+        document.getElementById('card1-button').disabled = true;
+        document.getElementById('card2-button').disabled = true;
 
-    console.log("Character 1:", character1);
-    console.log("Character 2:", character2);
+        return; // Stop execution
+    }
 
-    // 1. Update the Score Display
-    // Ensure you have a score element in your HTML (see HTML update below)
+    // Ensure we don't go past the available characters
+    // Using 2 characters per round, so index + 1 must be less than array length
+    if (characterIndex + 1 >= allCharacters.length) {
+        console.warn("Ran out of characters. Stopping game.");
+        // End the game if there aren't enough characters left for a full round
+        currentRound = MAX_ROUNDS + 1; // Force Game Over
+        startRound(); // Rerun to hit the Game Over logic above
+        return; 
+    }
+
+    // Select the next two characters based on the current index
+    character1 = allCharacters[characterIndex];
+    character2 = allCharacters[characterIndex + 1];
+
+    console.log(`--- Starting Round ${currentRound} ---`);
+    console.log("Character 1:", character1.Character);
+    console.log("Character 2:", character2.Character);
+
+    // 2. Update the Score and Round Display (assuming you add a round display element)
     document.getElementById('player-score').textContent = playerScore;
+    document.getElementById('round-number').textContent = `${currentRound}`;
+    // document.getElementById('round-number').textContent = currentRound; // Uncomment if you add this HTML element
 
-    // 2. Update the HTML elements (Card 1)
-    // Using 'Character' key for name and 'Source Image' key for image URL
+    // 3. Update the HTML elements (Card 1)
     document.querySelector('#card1 .character-name').textContent = character1.Character;
     document.querySelector('#card1 .character-image').src = character1["Source Image"] || 'https://placehold.co/100x100/cccccc/000000?text=NO+IMG';
     document.querySelector('#card1 .character-image').alt = character1.Character;
     
-    // 3. Update the HTML elements (Card 2)
-    // Using 'Character' key for name and 'Source Image' key for image URL
+    // 4. Update the HTML elements (Card 2)
     document.querySelector('#card2 .character-name').textContent = character2.Character;
     document.querySelector('#card2 .character-image').src = character2["Source Image"] || 'https://placehold.co/100x100/cccccc/000000?text=NO+IMG';
     document.querySelector('#card2 .character-image').alt = character2.Character;
     
-    // 4. Clear feedback and set prompt
-    document.getElementById('feedback').innerHTML = '<h3 class="text-xl font-bold">Who Will Win?</h2>';
+    // 5. Clear feedback and set prompt
+    document.getElementById('feedback').innerHTML = `<h3 class="text-xl font-bold">Round ${currentRound}/${MAX_ROUNDS}: Who Will Win?</h2>`;
     
-    // 5. Hide the power levels for the start of the round and enable buttons
+    // 6. Hide the power levels for the start of the round and enable buttons
     document.getElementById('card1-stats').classList.add('hidden');
     document.getElementById('card2-stats').classList.add('hidden');
     document.getElementById('card1-button').disabled = false;
@@ -111,7 +142,7 @@ window.makeGuess = function(guessCardNumber) {
 
     // Check for a tie
     if (power1 === power2) {
-        message = `It's a tie! Both ${name1} and ${name2} have a Power Level of ${character1["Power Level"]}.`;
+        message = `It's a tie! Both ${name1} and ${name2} are equals`;
         isCorrect = false; 
     } else {
         // Determine the user's chosen character based on the button clicked
@@ -119,42 +150,49 @@ window.makeGuess = function(guessCardNumber) {
         
         if (guessedCharacter === strongestCharacter) {
             isCorrect = true;
-            message = `🎉 Correct! ${guessedCharacter.Character} (Power Level: ${guessedCharacter["Power Level"]}) is stronger than ${weakestCharacter.Character} (Power Level: ${weakestCharacter["Power Level"]}).`;
+            message = `🎉 Correct! ${guessedCharacter.Character} is stronger than ${weakestCharacter.Character}`;
         } else {
             isCorrect = false;
-            message = `❌ Incorrect. ${guessedCharacter.Character} (Power Level: ${guessedCharacter["Power Level"]}) is weaker than the true strongest, ${strongestCharacter.Character} (Power Level: ${strongestCharacter["Power Level"]}).`;
+            message = `❌ Incorrect. ${guessedCharacter.Character} is weaker than the true strongest, ${strongestCharacter.Character}`;
         }
+    } // End of tie/non-tie check
 
     if (isCorrect) {
-        // Increment the global score variable (assuming 'playerScore' is defined globally)
+        // Increment the global score variable
         playerScore++; 
         // Update the score display element
         document.getElementById('player-score').textContent = playerScore;
-    }
-
-    else {playerScore = 0} //Change Points to 0 When Lost
+    } 
     
     // Update the feedback message with the final result
-    feedbackElement.innerHTML = `<h2 class="text-xl font-bold">${message}</h2>`;
+    feedbackElement.innerHTML = `<h2 class='text-xl font-bold p-2 text-${isCorrect ? 'green' : 'red'}-400'>${message}</h2>`;
     
-    // Add a "Next Round" button to the feedback area
+    // Add the "Next Round" button
     feedbackElement.innerHTML += `
-        <button onclick="startNextRound()" 
+        <button onclick="advanceGame()" 
                 class="action-button mt-4 px-6 py-2 bg-green-600 hover:bg-green-500 rounded-lg font-semibold shadow-lg">
             Start Next Round
         </button>
     `;
-    }
-
-    // Display the result
-    feedbackElement.innerHTML = `<h2 class='text-xl font-bold p-2 text-${isCorrect ? 'green' : 'red'}-400'>${message}</h2>`;
-
-    // After a short delay, start a new round
-    setTimeout(() => {
-        initializeGame();
-    }, 3000); // 3-second delay before the next round starts
+    
+    // CRITICAL FIX: Removed the automatic setTimeout call here.
+    // The game now waits for the player to click the "Start Next Round" button, 
+    // which calls the new `advanceGame` function.
 };
 
 
-// --- 4. Start the game by fetching data when the page loads ---
+// --- 4. Game Advancement Logic ---
+window.advanceGame = function() {
+    // 1. Increment the character index by 2 (to skip the characters just used)
+    characterIndex += 2; 
+
+    // 2. Increment the round number
+    currentRound++;
+    
+    // 3. Start the next round (which will check for MAX_ROUNDS)
+    startRound();
+}
+
+
+// --- 5. Start the game by fetching data when the page loads ---
 document.addEventListener('DOMContentLoaded', fetchData);

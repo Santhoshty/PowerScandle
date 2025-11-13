@@ -52,60 +52,60 @@
 
         <!-- Character Cards Container -->
         
-        <div class="flex flex-col md:flex-row gap-6 justify-center">
+    <div class="flex flex-col md:flex-row gap-6 justify-center">
 
-            <div id="card1" class="flex flex-col items-center p-6 bg-gray-700 rounded-xl card-shadow w-full md:w-1/2">
-                
-                <h3 class="character-name text-3xl font-bold mb-4 text-center">CHARACTER 1</h3>
-                
-                <img class="character-image w-64 h-64 object-contain border-4 border-indigo-400 mb-4" 
-                    src="https://placehold.co/300x300/cccccc/000000?text=SQUARE" 
-                    alt="Character Image"
-                    onerror="this.onerror=null; this.src='https://placehold.co/300x300/DC2626/ffffff?text=Image+Error';">
+        <div id="card1" class="flex flex-col items-center p-6 bg-gray-700 rounded-xl card-shadow w-full md:w-1/2">
+            
+            <h3 class="character-name text-3xl font-bold mb-4 text-center">CHARACTER 1</h3>
+            
+            <img class="character-image w-64 h-64 object-contain border-4 border-indigo-400 mb-4" 
+                src="https://placehold.co/300x300/cccccc/000000?text=SQUARE" 
+                alt="Character Image"
+                onerror="this.onerror=null; this.src='https://placehold.co/300x300/DC2626/ffffff?text=Image+Error';">
 
-                <div id="card1-stats" class="text-center mt-2 p-2 bg-gray-600 rounded-lg hidden">
-                    <p class="text-sm text-gray-300">Power Level:</p>
-                    <p id="card1-power" class="text-2xl font-extrabold text-green-300">?</p>
-                </div>
-                
-                <button id="card1-button" onclick="makeGuess(1)" 
-                        class="action-button mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold text-lg shadow-lg shadow-indigo-500/50">
-                    The Strongest Warrior!
-                </button>
-            </div>
-
-            <div class="flex items-center justify-center text-4xl font-black text-red-500 hidden md:flex md:h-auto md:w-auto">
-                <span class="p-2 border-4 border-red-500 bg-gray-800 rounded-full">VS</span>
+            <div id="card1-stats" class="text-center mt-2 p-2 bg-gray-600 rounded-lg hidden">
+                <p class="text-sm text-gray-300">Power Level:</p>
+                <p id="card1-power" class="text-2xl font-extrabold text-green-300">?</p>
             </div>
             
-            <div class="text-center text-2xl font-black text-red-500 md:hidden">VS</div>
-
-            <div id="card2" class="flex flex-col items-center p-6 bg-gray-700 rounded-xl card-shadow w-full md:w-1/2">
-                
-                <h3 class="character-name text-3xl font-bold mb-4 text-center">CHARACTER 2</h3>
-
-                <img class="character-image w-64 h-64 object-contain border-4 border-indigo-400 mb-4" 
-                    src="https://placehold.co/300x300/cccccc/000000?text=SQUARE" 
-                    alt="Character Image"
-                    onerror="this.onerror=null; this.src='https://placehold.co/300x300/DC2626/ffffff?text=Image+Error';">
-
-                <div id="card2-stats" class="text-center mt-2 p-2 bg-gray-600 rounded-lg hidden">
-                    <p class="text-sm text-gray-300">Power Level:</p>
-                    <p id="card2-power" class="text-2xl font-extrabold text-green-300">?</p>
-                </div>
-
-                <button id="card2-button" onclick="makeGuess(2)" 
-                        class="action-button mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold text-lg shadow-lg shadow-indigo-500/50">
-                    The Strongest Warrior!
-                </button>
-            </div>
-
+            <button id="card1-button" onclick="makeGuess(1)" 
+                    class="action-button mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold text-lg shadow-lg shadow-indigo-500/50">
+                The Strongest Warrior!
+            </button>
         </div>
 
-        <div 
+        <div class="flex items-center justify-center text-4xl font-black text-red-500 hidden md:flex md:h-auto md:w-auto">
+            <span class="p-2 border-4 border-red-500 bg-gray-800 rounded-full">VS</span>
+        </div>
+        
+        <div class="text-center text-2xl font-black text-red-500 md:hidden">VS</div>
+
+        <div id="card2" class="flex flex-col items-center p-6 bg-gray-700 rounded-xl card-shadow w-full md:w-1/2">
+            
+            <h3 class="character-name text-3xl font-bold mb-4 text-center">CHARACTER 2</h3>
+
+            <img class="character-image w-64 h-64 object-contain border-4 border-indigo-400 mb-4" 
+                src="https://placehold.co/300x300/cccccc/000000?text=SQUARE" 
+                alt="Character Image"
+                onerror="this.onerror=null; this.src='https://placehold.co/300x300/DC2626/ffffff?text=Image+Error';">
+
+            <div id="card2-stats" class="text-center mt-2 p-2 bg-gray-600 rounded-lg hidden">
+                <p class="text-sm text-gray-300">Power Level:</p>
+                <p id="card2-power" class="text-2xl font-extrabold text-green-300">?</p>
+            </div>
+
+            <button id="card2-button" onclick="makeGuess(2)" 
+                    class="action-button mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold text-lg shadow-lg shadow-indigo-500/50">
+                The Strongest Warrior!
+            </button>
+        </div>
+
+    </div>
+<div 
             class="text-center my-6 p-3 bg-indigo-900 rounded-lg shadow-xl">
             <h2 class="text-xl font-semibold text-indigo-300">
-                Current Score: <span id="player-score" class="text-3xl font-extrabold text-yellow-400">0</span>
+                Score: <span id="player-score" class="text-3xl font-extrabold text-yellow-400">0</span>
+                | Round: <span id="round-number" class="text-3xl font-extrabold text-yellow-400">1</span>/10
             </h2>
         </div>
 
