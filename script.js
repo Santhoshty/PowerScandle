@@ -60,8 +60,7 @@ function startRound() {
 // 1. Check if the game is over
     if (currentRound > MAX_ROUNDS) {
         // Handle Game Over logic here (e.g., display final score, reset button)
-        document.getElementById('feedback').innerHTML = '<h2 class="text-2xl font-bold text-green-500">Game Over!</h2><p class="text-xl">Your final score is: ' + playerScore + '/' + MAX_ROUNDS + '</p>';
-        console.log("Game Over! Final Score:", playerScore);
+document.getElementById('feedback').innerHTML = '<h2 class="text-2xl font-bold text-green-500 **mb-4**">Game Over! </h2><p class="text-xl">Your final score is: ' + playerScore + '/' + MAX_ROUNDS + '</p>';        console.log("Game Over! Final Score:", playerScore);
         
         // Optionally disable buttons or show a restart option
         document.getElementById('card1-button').disabled = true;
@@ -164,11 +163,11 @@ window.makeGuess = function(guessCardNumber) {
         if (guessedCharacter === strongestCharacter) {
             isCorrect = true;
             // Use the linked name in the message
-            message = `🎉 Correct! ${guessedCharacterLink} is stronger than ${weakestCharacterLink}`;
+            message = `🎉 Correct! <u>${guessedCharacterLink}</u> is stronger than <u>${weakestCharacterLink}</u>`;
         } else {
             isCorrect = false;
             // Use the linked names in the message
-            message = `❌ Incorrect. ${guessedCharacterLink} is weaker than the true strongest, ${strongestCharacterLink}`;
+            message = `❌ Incorrect. <u>${guessedCharacterLink}</u> is weaker than the true strongest, <u>${strongestCharacterLink}</u>`;
         }
     } // End of tie/non-tie check
 
