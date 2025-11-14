@@ -25,7 +25,7 @@ async function fetchData() {
         }
 
         // Shuffle the characters array to make the game more random
-        allCharacters.sort(() => Math.random() - 0.5); 
+        //allCharacters.sort(() => Math.random() - 0.5); 
 
         console.log("Data fetched successfully:", allCharacters);
         

@@ -1,10 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import sqlite3
 import json
 import time
+import random
 from flask import Flask, jsonify
-from flask_cors import CORS, cross_origin # Required for development to allow cross-origin requests
+from flask_cors import CORS # Required for development to allow cross-origin requests
 
 app = Flask(__name__)
 # Enable CORS for development
@@ -16,17 +18,15 @@ CORS(app)
 #url = "https://vsbattles.fandom.com/wiki/Collector"                                #edge case disambiguous page
 #url = "https://vsbattles.fandom.com/wiki/Nightmare_Nurse_(DC_Comics)"              #edge case tier unknown
 #url = "https://vsbattles.fandom.com/wiki/Happy_(Fairy_Tail)"                       #edge case Key? unsure
+#url = "https://vsbattles.fandom.com/wiki/The_Sphinx_(Rankin/Bass)"
 url = "https://vsbattles.fandom.com/wiki/Special:Random"
-#url = "https://vsbattles.fandom.com/wiki/The_Darkhold_(Marvel_Cinematic_Universe)" #edge case tier unknown
-
-DB_FILE = 'vsbattles_data.db'
-TABLE_NAME = 'characters'
+# url = "https://vsbattles.fandom.com/wiki/The_Darkhold_(Marvel_Cinematic_Universe)" #edge case tier unknown
 
 ###### METHODS ########
 
 # HTTP Request Method also prints the url taken from random
 
-def requestBegin():
+def requestBegin(target_url):
 # Http Request
     try:
         response = requests.get(url)
@@ -39,7 +39,8 @@ def requestBegin():
         print(f"Error fetching URL: {e}")
         exit()
 
-    return BeautifulSoup(response.content, 'html.parser')
+    soup = BeautifulSoup(response.content, 'html.parser')
+    return soup, recieved_url
 
 # Get The Tier Value in the Form of a String by Passing the Beautiful Soup Object
 # If String is 'none' restart
@@ -68,7 +69,6 @@ def getTier(soup_object):
 # Get the Source Image in the Form of a String by Passing the Beautiful Soup Object
 
 def getImageLink(soup_object):
-
 
     """
     Finds the primary character image located within the main character infobox,
@@ -119,62 +119,61 @@ def getImageLink(soup_object):
 def ratingValue(string):
     
     value_map = {
-        '11-C'      : 10,
-        '11-B'      : 20,
-        '11-A'      : 30,
-        '10-C'      : 40,
-        '10-B'      : 50,
-        '10-A'      : 60,
-        '9-C'       : 70,
-        '9-B'       : 80,
-        '9-A'       : 90,
-        '8-C'       : 100,
-        'High 8-C'  : 110,
-        '8-B'       : 120,
-        '8-A'       : 130,
-        'Low 7-C'   : 140,
-        '7-C'       : 150,
-        'High 7-C'  : 160,
-        'Low 7-B'   : 170,
-        '7-B'       : 180,
-        '7-A'       : 190,
-        'High 7-A'  : 200,
-        '6-C'       : 210,
-        'High 6-C'  : 220,
-        'Low 6-B'   : 225,
-        '6-B'       : 230,
-        'High 6-B'  : 240,
-        '6-A'       : 250,
-        'High 6-A'  : 260,
-        '5-C'       : 270,
-        'Low 5-B'   : 280,
-        '5-B'       : 290,
-        '5-A'       : 300,
-        'High 5-A'  : 310,
-        'Low 4-C'   : 320,
-        '4-C'       : 330,
-        'High 4-C'  : 340,
-        '4-B'       : 350,
-        '4-A'       : 360,
-        '3-C'       : 370,
-        '3-B'       : 380,
-        '3-A'       : 390,
-        'High 3-A'  : 400,
-        'Low 2-C'   : 410,
-        '2-C'       : 420,
-        '2-B'       : 430,
-        '2-A'       : 440,
-        'Low 1-C'   : 450,
-        '1-C'       : 460,
-        'High 1-C'  : 470,
-        '1-B'       : 480,
-        'High 1-B'  : 490,
-        'Low 1-A'   : 500,
-        '1-A'       : 510,
-        'High 1-A'  : 520,
-        '0'         : 530,
-        'Unknown'   : 540, #Darkhold
-        'Varies'    : 120 # Thaal Sinestro            
+        '11-C'      : 1,
+        '11-B'      : 2,
+        '11-A'      : 3,
+        '10-C'      : 4,
+        '10-B'      : 5,
+        '10-A'      : 6,
+        '9-C'       : 7,
+        '9-B'       : 8,
+        '9-A'       : 9,
+        '8-C'       : 10,
+        'High 8-C'  : 11,
+        '8-B'       : 12,
+        '8-A'       : 13,
+        'Low 7-C'   : 14,
+        '7-C'       : 15,
+        'High 7-C'  : 16,
+        'Low 7-B'   : 17,
+        '7-B'       : 18,
+        '7-A'       : 19,
+        'High 7-A'  : 20,
+        '6-C'       : 21,
+        'High 6-C'  : 22,
+        '6-B'       : 23,
+        'High 6-B'  : 24,
+        '6-A'       : 25,
+        'High 6-A'  : 26,
+        '5-C'       : 27,
+        'Low 5-B'   : 28,
+        '5-B'       : 29,
+        '5-A'       : 30,
+        'High 5-A'  : 31,
+        'Low 4-C'   : 32,
+        '4-C'       : 33,
+        'High 4-C'  : 34,
+        '4-B'       : 35,
+        '4-A'       : 36,
+        '3-C'       : 37,
+        '3-B'       : 38,
+        '3-A'       : 39,
+        'High 3-A'  : 40,
+        'Low 2-C'   : 41,
+        '2-C'       : 42,
+        '2-B'       : 43,
+        '2-A'       : 44,
+        'Low 1-C'   : 45,
+        '1-C'       : 46,
+        'High 1-C'  : 47,
+        '1-B'       : 48,
+        'High 1-B'  : 49,
+        'Low 1-A'   : 50,
+        '1-A'       : 51,
+        'High 1-A'  : 52,
+        '0'         : 53,
+        'Unknown'   : 54, #Darkhold
+        'Varies'    : 12 # Thaal Sinestro            
     }
 
     return value_map.get(string, 0)
@@ -184,61 +183,46 @@ reiterations = 0
 
 #Dictionary
 data = []
-while count < 21:
+soup, character_url = requestBegin(url)
+keys = ["Character", "Tier", "Source Image", "Power Level", "URL"]
+value = []
 
-    keys = ["Character", "Tier", "Source Image", "Power Level"]
-    value = []
-    soup = requestBegin()
+# Character Name
+page_title = soup.title.string
+character_name = page_title.split(' |',1)[0]
+print(f"Character Name: {character_name}")
+value.append(character_name)
 
-    # Character Name
-    page_title = soup.title.string
-    character_name = page_title.split(' |',1)[0]
-    print(f"Character Name: {character_name}")
-    value.append(character_name)
+tier_value = getTier(soup)
 
-    #url
-    
-    #Tier Value
-    tier_value = getTier(soup)
+if tier_value is None:
+    reiterations += 1
+    if reiterations == 10:
+        exit()
 
-    if tier_value is None:
-        reiterations += 1
-        if reiterations == 10:
-            exit()
-
-        print (f"Tier Invalid - {reiterations} reiteration")
-        time.sleep(0.2)
-        continue
-    print(f"Tier: {tier_value}")
-    value.append(tier_value)
-
-    image_link = getImageLink(soup)
-    print(f"Source Image: {image_link}")
-    value.append(image_link)
-
-    power_level = ratingValue(tier_value)
-    print(f"Power Level: {power_level}\n")
-    value.append(power_level)
-
-    # Combine keys and values into a single dictionary using zip()
-    character_data = dict(zip(keys, value))
-    data.append(character_data) # Add the dictionary to the 
-
-    count += 1
+    print (f"Tier Invalid - {reiterations} reiteration")
     time.sleep(0.2)
+
+print(f"Tier: {tier_value}")
+value.append(tier_value)
+
+image_link = getImageLink(soup)
+print(f"Source Image: {image_link}")
+value.append(image_link)
+
+power_level = ratingValue(tier_value)
+print(f"Power Level: {power_level}\n")
+value.append(power_level)
+
+value.append(character_url)
+
+# Combine keys and values into a single dictionary using zip()
+character_data = dict(zip(keys, value))
+data.append(character_data) # Add the dictionary to the 
+
+count += 1
+time.sleep(0.2)
 
 json_data = json.dumps(data, indent=4)
 print("Collected Data:")
 print(json_data)
-
-app = Flask(__name__)
-
-@app.route("/api/data", methods = ['GET'])
-@cross_origin() 
-def get_data():
-    return jsonify(data)
-
-if __name__ == '__main__':
-    # Running the app on the host and port specified in the JavaScript snippet
-    print("Starting Flask server on http://127.0.0.1:8004/api/data...")
-    app.run(host = "127.0.0.1", port=8004)
