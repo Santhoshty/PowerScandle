@@ -78,3 +78,8 @@ button:hover {
     margin-top: 20px;
     font-size: 1.1em;
 }
+
+#feedback a {
+    text-decoration: underline;
+    color: inherit;
+}

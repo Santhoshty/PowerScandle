@@ -19,17 +19,15 @@ CORS(app)
 url = "https://vsbattles.fandom.com/wiki/Special:Random"
 #url = "https://vsbattles.fandom.com/wiki/The_Darkhold_(Marvel_Cinematic_Universe)" #edge case tier unknown
 
-DB_FILE = 'vsbattles_data.db'
-TABLE_NAME = 'characters'
 
 ###### METHODS ########
 
 # HTTP Request Method also prints the url taken from random
 
-def requestBegin():
+def requestBegin(target_url):
 # Http Request
     try:
-        response = requests.get(url)
+        response = requests.get(target_url)
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
         html_content = response.text # Giant String for all the html content
         recieved_url = response.url
@@ -39,7 +37,8 @@ def requestBegin():
         print(f"Error fetching URL: {e}")
         exit()
 
-    return BeautifulSoup(response.content, 'html.parser')
+    soup = BeautifulSoup(response.content, 'html.parser')
+    return soup, recieved_url
 
 # Get The Tier Value in the Form of a String by Passing the Beautiful Soup Object
 # If String is 'none' restart
@@ -184,19 +183,18 @@ reiterations = 0
 
 #Dictionary
 data = []
+keys = ["Character", "Tier", "Source Image", "Power Level", "URL"]
+
 while count < 21:
 
-    keys = ["Character", "Tier", "Source Image", "Power Level"]
+    soup, character_url = requestBegin(url)
     value = []
-    soup = requestBegin()
 
     # Character Name
     page_title = soup.title.string
     character_name = page_title.split(' |',1)[0]
     print(f"Character Name: {character_name}")
     value.append(character_name)
-
-    #url
     
     #Tier Value
     tier_value = getTier(soup)
@@ -209,6 +207,7 @@ while count < 21:
         print (f"Tier Invalid - {reiterations} reiteration")
         time.sleep(0.2)
         continue
+
     print(f"Tier: {tier_value}")
     value.append(tier_value)
 
@@ -217,8 +216,11 @@ while count < 21:
     value.append(image_link)
 
     power_level = ratingValue(tier_value)
-    print(f"Power Level: {power_level}\n")
+    print(f"Power Level: {power_level}")
     value.append(power_level)
+    
+    print(f"URL: {character_url}\n")
+    value.append(character_url)
 
     # Combine keys and values into a single dictionary using zip()
     character_data = dict(zip(keys, value))

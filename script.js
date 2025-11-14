@@ -44,6 +44,16 @@ async function fetchData() {
     }
 }
 
+function createCharacterLink(character) {
+    // We access the URL property from the character object
+    const url = character.URL; 
+    // We access the Character name property from the character object
+    const name = character.Character; 
+    
+    // Return an HTML anchor tag string
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${name}</a>`;
+}
+
 // --- 2. Game Round Logic (Renamed and Improved) ---
 function startRound() {
 
@@ -139,6 +149,7 @@ window.makeGuess = function(guessCardNumber) {
     // Get names
     const name1 = character1.Character;
     const name2 = character2.Character;
+    
 
     // Check for a tie
     if (power1 === power2) {
@@ -147,13 +158,17 @@ window.makeGuess = function(guessCardNumber) {
     } else {
         // Determine the user's chosen character based on the button clicked
         const guessedCharacter = (guessCardNumber === 1) ? character1 : character2;
-        
+        const guessedCharacterLink = createCharacterLink(guessedCharacter);
+        const strongestCharacterLink = createCharacterLink(strongestCharacter);
+        const weakestCharacterLink = createCharacterLink(weakestCharacter);
         if (guessedCharacter === strongestCharacter) {
             isCorrect = true;
-            message = `🎉 Correct! ${guessedCharacter.Character} is stronger than ${weakestCharacter.Character}`;
+            // Use the linked name in the message
+            message = `🎉 Correct! ${guessedCharacterLink} is stronger than ${weakestCharacterLink}`;
         } else {
             isCorrect = false;
-            message = `❌ Incorrect. ${guessedCharacter.Character} is weaker than the true strongest, ${strongestCharacter.Character}`;
+            // Use the linked names in the message
+            message = `❌ Incorrect. ${guessedCharacterLink} is weaker than the true strongest, ${strongestCharacterLink}`;
         }
     } // End of tie/non-tie check
 
