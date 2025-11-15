@@ -16,7 +16,7 @@ CORS(app)
 #url = "https://vsbattles.fandom.com/wiki/Collector"                                #edge case disambiguous page
 #url = "https://vsbattles.fandom.com/wiki/Nightmare_Nurse_(DC_Comics)"              #edge case tier unknown
 #url = "https://vsbattles.fandom.com/wiki/Happy_(Fairy_Tail)"                       #edge case Key? unsure
-url = "https://vsbattles.fandom.com/wiki/Izuku_Midoriya_(Deku)_(Pre-Final_Act)"
+url = "https://vsbattles.fandom.com/wiki/Special:Random"
 #url = "https://vsbattles.fandom.com/wiki/The_Darkhold_(Marvel_Cinematic_Universe)" #edge case tier unknown
 
 
@@ -172,7 +172,7 @@ def ratingValue(string):
         '1-A'       : 510,
         'High 1-A'  : 520,
         '0'         : 530,
-        'Unknown'   : 540, #Darkhold
+        'Unknown'   : 365, #Darkhold
         'Varies'    : 120 # Thaal Sinestro            
     }
 
