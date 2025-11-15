@@ -139,4 +139,4 @@ def get_data():
         # Return an error if no data was successfully collected
         return jsonify({"error": "Failed to scrape any data. Check source site or logic."}), 500
 
-    return jsonify(data) s
+    return jsonify(data) #test code
