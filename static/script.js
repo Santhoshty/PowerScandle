@@ -12,7 +12,7 @@ const MAX_ROUNDS = 10;
 async function fetchData() {
     try {
         // Fetch the data from the Flask endpoint
-        const response = await fetch('http://127.0.0.1:8004/api/data');
+        const response = await fetch('http://127.0.0.1:5000/api/data');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
