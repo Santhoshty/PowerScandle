@@ -6,6 +6,7 @@ import time
 from flask import Flask, jsonify
 from flask_cors import CORS, cross_origin # Required for development to allow cross-origin requests
 from waitress import serve
+import os
 
 
 #Constants
@@ -232,6 +233,11 @@ print("Collected Data:")
 print(json_data)
 
 # Server Setup
+
+from flask import Flask, jsonify
+from flask_cors import CORS, cross_origin # Required for development to allow cross-origin requests
+from waitress import serve
+
 app = Flask(__name__)
 # Enable CORS for development
 CORS(app)
