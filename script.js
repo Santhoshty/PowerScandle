@@ -152,8 +152,10 @@ window.makeGuess = function(guessCardNumber) {
 
     // Check for a tie
     if (power1 === power2) {
-        message = `It's a tie! Both ${name1} and ${name2} are equals`;
-        isCorrect = false; 
+        const characterTier1 = createCharacterLink(character1)
+        const characterTier2 = createCharacterLink(character2)
+        message = `It's a tie! Both <u>${characterTier1}</u> and <u>${characterTier2}</u> are equals. <br>Free Point!</br>`;
+        isCorrect = true; 
     } else {
         // Determine the user's chosen character based on the button clicked
         const guessedCharacter = (guessCardNumber === 1) ? character1 : character2;
