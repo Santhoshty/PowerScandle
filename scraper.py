@@ -5,10 +5,8 @@ import json
 import time
 from flask import Flask, jsonify
 from flask_cors import CORS, cross_origin # Required for development to allow cross-origin requests
+from waitress import serve
 
-app = Flask(__name__)
-# Enable CORS for development
-CORS(app)
 
 #Constants
 #url = "https://vsbattles.fandom.com/wiki/Captain_America_(Marvel_Comics)"
@@ -233,7 +231,10 @@ json_data = json.dumps(data, indent=4)
 print("Collected Data:")
 print(json_data)
 
+# Server Setup
 app = Flask(__name__)
+# Enable CORS for development
+CORS(app)
 
 @app.route("/api/data", methods = ['GET'])
 @cross_origin() 
@@ -243,4 +244,4 @@ def get_data():
 if __name__ == '__main__':
     # Running the app on the host and port specified in the JavaScript snippet
     print("Starting Flask server on http://127.0.0.1:8004/api/data...")
-    app.run(host = "127.0.0.1", port=8004)
+    serve(app, host = "0.0.0.0", port=8004) 
