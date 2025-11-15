@@ -1,0 +1,12 @@
+Avoid Equal Power Levels
+Figure out Varies and Unknown
+Add Victory and Loss
+
+# Big Step
+
+- Get the Name, Origin, Gender, Age, Classification
+- Create an Empty Text File That Auto Completes
+
+
+# give the link
+#easy medium hardpu

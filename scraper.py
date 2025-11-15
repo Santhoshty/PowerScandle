@@ -244,4 +244,5 @@ def get_data():
 if __name__ == '__main__':
     # Running the app on the host and port specified in the JavaScript snippet
     print("Starting Flask server on http://127.0.0.1:8004/api/data...")
-    serve(app, host = "0.0.0.0", port=10000) 
+    port = int(os.environ.get('PORT', 5000))
+    serve(app, host = "0.0.0.0", port=port) 
