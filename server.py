@@ -227,9 +227,18 @@ while count < 21:
     count += 1
     time.sleep(0.2)
 
-json_data = json.dumps(data, indent=4)
-print("Collected Data:")
-print(json_data)
+filename = "output.json"
+
+try:
+    # Use json.dump() to write the data list directly to the file object
+    with open(filename, 'w', encoding='utf-8') as json_file:
+        json.dump(data, json_file, indent=4)
+    
+    print(f"Successfully wrote data to {filename}")
+
+
+except IOError as e:
+    print(f"Error writing to file {filename}: {e}")
 
 # Server Setup
 app = Flask(__name__)
